@@ -18,44 +18,37 @@ export type Config = z.infer<typeof configSchema>;
 export function loadConfig(): Config {
   loadEnvFile();
 
-  const apiKey = firstEnv("OPENAI_API_KEY", "VISION_API_KEY");
+  const apiKey = env("OPENAI_API_KEY");
   if (!apiKey) {
     throw new Error(
-      "OPENAI_API_KEY or VISION_API_KEY is not set. Configure it in the mcpServers env or a .env file.",
+      "OPENAI_API_KEY is not set. Configure it in the mcpServers env or a .env file.",
     );
   }
 
   const raw = {
     apiKey,
-    model: firstEnv("OPENAI_MODEL", "VISION_MODEL", "VISION_MODEL_NAME"),
-    baseURL: firstEnv("OPENAI_BASE_URL", "VISION_BASE_URL"),
-    timeoutMs: numberEnv(
-      "OPENAI_TIMEOUT_MS",
-      "VISION_TIMEOUT_MS",
-      "VISION_REQUEST_TIMEOUT_MS",
-    ),
-    localFileInputEnabled: booleanEnv("VISION_ENABLE_LOCAL_PATH_INPUT"),
-    localFileAllowedRoots: rootsEnv("VISION_ALLOWED_LOCAL_ROOTS"),
+    model: env("OPENAI_MODEL"),
+    baseURL: env("OPENAI_BASE_URL"),
+    timeoutMs: numberEnv("OPENAI_TIMEOUT_MS"),
+    localFileInputEnabled: booleanEnv("LOCAL_FILE_INPUT_ENABLED"),
+    localFileAllowedRoots: rootsEnv("LOCAL_FILE_ALLOWED_ROOTS"),
   };
 
   return configSchema.parse(raw);
 }
 
-function firstEnv(...names: string[]): string | undefined {
-  for (const name of names) {
-    const value = process.env[name]?.trim();
-    if (value) return value;
-  }
-  return undefined;
+function env(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value || undefined;
 }
 
-function numberEnv(...names: string[]): number | undefined {
-  const value = firstEnv(...names);
+function numberEnv(name: string): number | undefined {
+  const value = env(name);
   return value ? Number(value) : undefined;
 }
 
 function booleanEnv(name: string): boolean | undefined {
-  const value = firstEnv(name);
+  const value = env(name);
   if (!value) return undefined;
   if (["1", "true", "yes", "on"].includes(value.toLowerCase())) return true;
   if (["0", "false", "no", "off"].includes(value.toLowerCase())) return false;
@@ -63,7 +56,7 @@ function booleanEnv(name: string): boolean | undefined {
 }
 
 function rootsEnv(name: string): string[] | undefined {
-  const value = firstEnv(name);
+  const value = env(name);
   if (!value) return undefined;
   return value
     .split(",")

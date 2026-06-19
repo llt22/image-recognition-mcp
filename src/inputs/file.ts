@@ -91,7 +91,7 @@ async function assertAllowedLocalPath(
 
   if (!isAllowed) {
     throw new Error(
-      `Image file is outside VISION_ALLOWED_LOCAL_ROOTS: ${filePath}`,
+      `Image file is outside LOCAL_FILE_ALLOWED_ROOTS: ${filePath}`,
     );
   }
 }
@@ -101,7 +101,7 @@ async function resolveAllowedRoot(root: string): Promise<string> {
     return await realpath(resolve(expandHome(root)));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`Invalid VISION_ALLOWED_LOCAL_ROOTS entry ${root}: ${message}`);
+    throw new Error(`Invalid LOCAL_FILE_ALLOWED_ROOTS entry ${root}: ${message}`);
   }
 }
 

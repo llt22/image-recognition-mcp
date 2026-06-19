@@ -51,20 +51,14 @@ Copy `.env.example` to `.env` and fill in your key. The server loads the project
 cp .env.example .env
 ```
 
-| Env var                          | Default        | Description                                                |
-| -------------------------------- | -------------- | ---------------------------------------------------------- |
-| `OPENAI_API_KEY`                 | — (required)   | OpenAI-compatible API key                                  |
-| `VISION_API_KEY`                 | —              | Alias used when `OPENAI_API_KEY` is not set                |
-| `OPENAI_MODEL`                   | `gpt-4o-mini`  | Vision model                                               |
-| `VISION_MODEL`, `VISION_MODEL_NAME` | —           | Aliases used when `OPENAI_MODEL` is not set                |
-| `OPENAI_BASE_URL`                | OpenAI default | Override for proxies / compatible gateways                 |
-| `VISION_BASE_URL`                | —              | Alias used when `OPENAI_BASE_URL` is not set               |
-| `OPENAI_TIMEOUT_MS`              | `60000`        | Request timeout                                            |
-| `VISION_TIMEOUT_MS`, `VISION_REQUEST_TIMEOUT_MS` | — | Aliases used when `OPENAI_TIMEOUT_MS` is not set      |
-| `VISION_ENABLE_LOCAL_PATH_INPUT` | `true`         | Set to `false` to disable local file path input            |
-| `VISION_ALLOWED_LOCAL_ROOTS`     | —              | Comma-separated local path allowlist, e.g. `/tmp,~/Pictures`; empty allows all |
-
-`OPENAI_*` variables take precedence over `VISION_*` aliases so existing configs keep working.
+| Env var                    | Default        | Description                                                |
+| -------------------------- | -------------- | ---------------------------------------------------------- |
+| `OPENAI_API_KEY`           | — (required)   | OpenAI-compatible API key                                  |
+| `OPENAI_MODEL`             | `gpt-4o-mini`  | Vision model                                               |
+| `OPENAI_BASE_URL`          | OpenAI default | Override for proxies / compatible gateways                 |
+| `OPENAI_TIMEOUT_MS`        | `60000`        | Request timeout                                            |
+| `LOCAL_FILE_INPUT_ENABLED` | `true`         | Set to `false` to disable local file path input            |
+| `LOCAL_FILE_ALLOWED_ROOTS` | —              | Comma-separated local path allowlist, e.g. `/tmp,~/Pictures`; empty allows all |
 
 Provider examples:
 
@@ -74,19 +68,19 @@ OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o-mini
 
 # Gemini OpenAI-compatible endpoint
-VISION_API_KEY=...
-VISION_MODEL=gemini-2.5-flash
-VISION_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+OPENAI_API_KEY=...
+OPENAI_MODEL=gemini-2.5-flash
+OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 
 # Qwen / DashScope OpenAI-compatible endpoint
-VISION_API_KEY=...
-VISION_MODEL=qwen-vl-plus
-VISION_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+OPENAI_API_KEY=...
+OPENAI_MODEL=qwen-vl-plus
+OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 
 # LiteLLM or a self-hosted OpenAI-compatible gateway
-VISION_API_KEY=...
-VISION_MODEL=your-vision-model
-VISION_BASE_URL=http://localhost:4000/v1
+OPENAI_API_KEY=...
+OPENAI_MODEL=your-vision-model
+OPENAI_BASE_URL=http://localhost:4000/v1
 ```
 
 ## Run locally
