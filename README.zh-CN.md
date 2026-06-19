@@ -1,6 +1,6 @@
 # clipboard-vision-mcp
 
-[English](README.md) | [中文](README.zh-CN.md)
+[中文](README.md) | [English](README.en.md)
 
 如果你的编码助手或 AI 工具用的是纯文本模型，每次截图都得手动描述或者切到带视觉的工具里处理，这个 MCP 服务就是来解决这个问题的。
 
