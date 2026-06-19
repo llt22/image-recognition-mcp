@@ -1,11 +1,11 @@
 {
-  "name": "@llt22/image-recognition-mcp",
+  "name": "clipboard-vision-mcp",
   "version": "0.1.0",
   "description": "Clipboard-first MCP server that gives vision-less LLMs image recognition via OpenAI-compatible vision models.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "image-recognition-mcp": "dist/index.js"
+    "clipboard-vision-mcp": "dist/index.js"
   },
   "files": [
     "dist",

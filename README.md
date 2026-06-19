@@ -1,4 +1,4 @@
-# image-recognition-mcp
+# clipboard-vision-mcp
 
 [English](README.md) | [中文](README.zh-CN.md)
 
@@ -7,7 +7,7 @@ An [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs**
 If your coding agent runs on a text-only model and can't see images, register this server once and it gains clipboard-first image analysis tools — returning text descriptions, OCR results, or answers about screenshots.
 
 ```
-LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-compatible API──► vision model ──► text result
+LLM (no vision) ──MCP/stdio──► clipboard-vision-mcp ──OpenAI-compatible API──► vision model ──► text result
 ```
 
 ## Features
@@ -41,7 +41,7 @@ LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-comp
 From npm:
 
 ```bash
-npm install -g @llt22/image-recognition-mcp
+npm install -g clipboard-vision-mcp
 ```
 
 Or from source:
@@ -112,7 +112,7 @@ Add an entry to your ZCode MCP config. The config file is at `~/.zcode/v2/config
   "mcpServers": {
     "clipboard-vision": {
       "command": "npx",
-      "args": ["-y", "@llt22/image-recognition-mcp"],
+      "args": ["-y", "clipboard-vision-mcp"],
       "env": {
         "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
         "OPENAI_MODEL": "gpt-4o-mini"
@@ -139,7 +139,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "clipboard-vision": {
       "command": "npx",
-      "args": ["-y", "@llt22/image-recognition-mcp"],
+      "args": ["-y", "clipboard-vision-mcp"],
       "env": { "OPENAI_API_KEY": "sk-..." }
     }
   }
@@ -194,7 +194,7 @@ Local files, data URLs, raw base64, and clipboard inputs must be PNG, JPEG, GIF,
 ## Project structure
 
 ```
-image-recognition-mcp/
+clipboard-vision-mcp/
 ├── package.json
 ├── tsconfig.json
 ├── .env.example

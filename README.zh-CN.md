@@ -1,4 +1,4 @@
-# image-recognition-mcp
+# clipboard-vision-mcp
 
 [English](README.md) | [中文](README.zh-CN.md)
 
@@ -7,7 +7,7 @@
 只需注册一次，它就能让**没有视觉能力的 LLM** 看懂你剪贴板里的截图——自动把图片转给 OpenAI-compatible 视觉模型，拿回文字描述、OCR 结果或相关分析。
 
 ```text
-LLM（无视觉）──MCP/stdio──► image-recognition-mcp ──OpenAI-compatible API──► 视觉模型 ──► 文本结果
+LLM（无视觉）──MCP/stdio──► clipboard-vision-mcp ──OpenAI-compatible API──► 视觉模型 ──► 文本结果
 ```
 
 ## 功能
@@ -41,7 +41,7 @@ LLM（无视觉）──MCP/stdio──► image-recognition-mcp ──OpenAI-co
 从 npm 安装：
 
 ```bash
-npm install -g @llt22/image-recognition-mcp
+npm install -g clipboard-vision-mcp
 ```
 
 或从源码运行：
@@ -112,7 +112,7 @@ npm run build && npm start
   "mcpServers": {
     "clipboard-vision": {
       "command": "npx",
-      "args": ["-y", "@llt22/image-recognition-mcp"],
+      "args": ["-y", "clipboard-vision-mcp"],
       "env": {
         "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
         "OPENAI_MODEL": "gpt-4o-mini"
@@ -139,7 +139,7 @@ Agent 通常会调用 `analyze_clipboard_image`，或使用默认剪贴板输入
   "mcpServers": {
     "clipboard-vision": {
       "command": "npx",
-      "args": ["-y", "@llt22/image-recognition-mcp"],
+      "args": ["-y", "clipboard-vision-mcp"],
       "env": { "OPENAI_API_KEY": "sk-..." }
     }
   }
@@ -194,7 +194,7 @@ Agent 通常会调用 `analyze_clipboard_image`，或使用默认剪贴板输入
 ## 项目结构
 
 ```text
-image-recognition-mcp/
+clipboard-vision-mcp/
 ├── package.json
 ├── tsconfig.json
 ├── .env.example
