@@ -1,6 +1,6 @@
 {
   "name": "clipboard-vision-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Clipboard-first MCP server that gives vision-less LLMs image recognition via OpenAI-compatible vision models.",
   "type": "module",
   "main": "dist/index.js",
