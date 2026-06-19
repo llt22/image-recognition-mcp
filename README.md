@@ -2,9 +2,9 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-An [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to recognize clipboard screenshots and images, by proxying to a configured OpenAI-compatible vision model.
+An [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to understand clipboard screenshots and images, by proxying to a configured OpenAI-compatible vision model.
 
-If your coding agent (like ZCode running on a text-only model) can't see images, register this server once and it gains clipboard-first image analysis tools that return a textual description / OCR / answer about screenshots and images.
+If your coding agent runs on a text-only model and can't see images, register this server once and it gains clipboard-first image analysis tools — returning text descriptions, OCR results, or answers about screenshots.
 
 ```
 LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-compatible API──► vision model ──► text result
@@ -15,14 +15,14 @@ LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-comp
 - 🖼️ Four tools:
   - `analyze_clipboard_image` for general screenshot/image analysis
   - `extract_clipboard_text` for OCR-heavy screenshots
-  - `diagnose_clipboard_error` for errors, stack traces, terminal output, and failed UI states
+  - `diagnose_clipboard_error` for error messages, stack traces, terminal output, and failed UI states
   - `recognize_image` for clipboard, file, URL, data URL, or base64 image input
-- 📥 Four input forms:
+- 📥 Four input sources:
   - Current clipboard image / latest screenshot (default)
-  - Local file path (`/Users/x/a.png`, `./pic.jpg`, `~/Desktopshot.png`)
+  - Local file path (`/Users/x/a.png`, `./pic.jpg`, `~/Desktop/shot.png`)
   - HTTP/HTTPS URL (passed straight to OpenAI)
   - Base64 string or `data:image/...;base64,...` data URL
-- 🔧 Configurable OpenAI-compatible provider, model (`gpt-4o-mini` by default), detail level, max tokens, timeout
+- 🔧 Configurable OpenAI-compatible provider, model (`gpt-4o-mini` by default), detail level, max tokens, and timeout
 - 🛡️ Validates local / base64 / clipboard images before sending them upstream
 - 🔒 Optional local file path switch and allowlist for tighter deployments
 - 🧱 stdio transport — works with any MCP-compatible host (ZCode, Claude Desktop, etc.)
@@ -30,10 +30,10 @@ LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-comp
 ## Prerequisites
 
 - Node.js ≥ 20
-- An OpenAI API key with access to `gpt-4o` / `gpt-4o-mini`
+- An OpenAI-compatible API key for a vision-capable model
 - Clipboard capture:
   - macOS: [`pngpaste`](https://github.com/jcsalterego/pngpaste) (`brew install pngpaste`)
-  - Windows: Windows PowerShell (`powershell.exe`, built in)
+  - Windows: PowerShell (`powershell.exe`, built in)
   - Linux: `wl-paste` from `wl-clipboard` on Wayland, or `xclip` on X11
 
 ## Install
@@ -58,7 +58,7 @@ cp .env.example .env
 | `OPENAI_API_KEY`           | — (required)   | OpenAI-compatible API key                                  |
 | `OPENAI_MODEL`             | `gpt-4o-mini`  | Vision model                                               |
 | `OPENAI_BASE_URL`          | OpenAI default | Override for proxies / compatible gateways                 |
-| `OPENAI_TIMEOUT_MS`        | `60000`        | Request timeout                                            |
+| `OPENAI_TIMEOUT_MS`        | `60000`        | Request timeout (milliseconds)                             |
 | `LOCAL_FILE_INPUT_ENABLED` | `true`         | Set to `false` to disable local file path input            |
 | `LOCAL_FILE_ALLOWED_ROOTS` | —              | Comma-separated local path allowlist, e.g. `/tmp,~/Pictures`; empty allows all |
 
@@ -97,7 +97,7 @@ The server speaks MCP over stdio — it expects JSON-RPC frames on stdin and wri
 
 ## Register with ZCode
 
-Add an entry to your ZCode MCP config. The config file lives at `~/.zcode/v2/config.json` (look for the `mcpServers` key). The absolute path to `dist/index.js` must be used.
+Add an entry to your ZCode MCP config. The config file is at `~/.zcode/v2/config.json` (look for the `mcpServers` key). The absolute path to `dist/index.js` must be used.
 
 ```jsonc
 {
@@ -146,7 +146,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 | `detail`     | `"auto"` \| `"low"` \| `"high"` | no       | `auto`                                                                   | Vision detail level. `low` is cheaper/faster.          |
 | `maxTokens`  | integer                       | no       | `1024`                                                                   | Max tokens for the response                            |
 
-Reads the current clipboard image / latest screenshot.
+Reads the current clipboard image.
 
 ### `extract_clipboard_text`
 
@@ -156,7 +156,7 @@ Reads the current clipboard image / latest screenshot.
 | `detail`     | `"auto"` \| `"low"` \| `"high"` | no       | `auto`                                                                   | Vision detail level. `low` is cheaper/faster.          |
 | `maxTokens`  | integer                       | no       | `1024`                                                                   | Max tokens for the response                            |
 
-Reads the current clipboard image / latest screenshot and optimizes the default prompt for OCR.
+Reads the current clipboard image and optimizes the default prompt for OCR.
 
 ### `diagnose_clipboard_error`
 
@@ -166,7 +166,7 @@ Reads the current clipboard image / latest screenshot and optimizes the default 
 | `detail`     | `"auto"` \| `"low"` \| `"high"` | no       | `auto`                                                                   | Vision detail level. `low` is cheaper/faster.          |
 | `maxTokens`  | integer                       | no       | `1024`                                                                   | Max tokens for the response                            |
 
-Reads the current clipboard image / latest screenshot and optimizes the default prompt for debugging.
+Reads the current clipboard image and optimizes the default prompt for debugging.
 
 ### `recognize_image`
 
@@ -179,7 +179,7 @@ Reads the current clipboard image / latest screenshot and optimizes the default 
 
 Returns `{ content: [{ type: "text", text: "..." }] }`, or `isError: true` with an error message on failure.
 
-Local file, data URL, raw base64, and clipboard inputs must be PNG, JPEG, GIF, WebP, or BMP images up to 20 MiB. HTTP/HTTPS URLs are passed to OpenAI as URLs.
+Local files, data URLs, raw base64, and clipboard inputs must be PNG, JPEG, GIF, WebP, or BMP images up to 20 MiB. HTTP/HTTPS URLs are passed to OpenAI as URLs.
 
 ## Project structure
 
