@@ -1,16 +1,7 @@
-import { readFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import { extname } from "node:path";
+import { readFile, stat } from "node:fs/promises";
+import { existsSync, type Stats } from "node:fs";
 import { ResolvedImage } from "./types.js";
-
-const MIME_BY_EXT: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-  ".bmp": "image/bmp",
-};
+import { assertImageSize, mimeTypeForPath, validateImageBytes } from "./image.js";
 
 export function looksLikeFilePath(input: string): boolean {
   if (input.startsWith("http://") || input.startsWith("https://")) return false;
@@ -24,24 +15,37 @@ export function looksLikeFilePath(input: string): boolean {
   );
 }
 
-export function mimeTypeForPath(path: string): string {
-  return MIME_BY_EXT[extname(path).toLowerCase()] ?? "image/png";
-}
-
 export async function fromFile(path: string): Promise<ResolvedImage> {
   const expanded = path.startsWith("~/")
     ? `${process.env.HOME ?? ""}${path.slice(1)}`
     : path;
 
-  if (!existsSync(expanded)) {
-    throw new Error(`Image file not found: ${path}`);
+  let fileStat: Stats;
+  try {
+    fileStat = await stat(expanded);
+  } catch (err) {
+    if (isNodeError(err) && err.code === "ENOENT") {
+      throw new Error(`Image file not found: ${path}`);
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Unable to read image file metadata for ${path}: ${message}`);
+  }
+  if (!fileStat.isFile()) {
+    throw new Error(`Image path is not a file: ${path}`);
   }
 
-  const data = await readFile(expanded);
   const mimeType = mimeTypeForPath(expanded);
+  assertImageSize(fileStat.size, `Image file ${path}`);
+
+  const data = await readFile(expanded);
+  validateImageBytes(data, mimeType, `Image file ${path}`);
   return {
     kind: "base64",
     data: data.toString("base64"),
     mimeType,
   };
+}
+
+function isNodeError(err: unknown): err is NodeJS.ErrnoException {
+  return err instanceof Error && "code" in err;
 }

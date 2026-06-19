@@ -17,6 +17,7 @@ LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI API�
   - Base64 string or `data:image/...;base64,...` data URL
   - `"clipboard"` — grabs the latest screenshot from the macOS clipboard
 - 🔧 Configurable model (`gpt-4o-mini` by default), detail level, max tokens, timeout
+- 🛡️ Validates local / base64 / clipboard images before sending them upstream
 - 🧱 stdio transport — works with any MCP-compatible host (ZCode, Claude Desktop, etc.)
 
 ## Prerequisites
@@ -36,7 +37,7 @@ npm run build
 
 ## Configure
 
-Copy `.env.example` to `.env` and fill in your key (only needed for local `npm run dev`):
+Copy `.env.example` to `.env` and fill in your key. The server loads the project-root `.env` file when present, while keeping any environment variables already provided by the MCP host.
 
 ```bash
 cp .env.example .env
@@ -112,6 +113,8 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 | `maxTokens`  | integer                       | no       | `1024`                                                                   | Max tokens for the response                            |
 
 Returns `{ content: [{ type: "text", text: "..." }] }`, or `isError: true` with an error message on failure.
+
+Local file, data URL, raw base64, and clipboard inputs must be PNG, JPEG, GIF, WebP, or BMP images up to 20 MiB. HTTP/HTTPS URLs are passed to OpenAI as URLs.
 
 ## Project structure
 

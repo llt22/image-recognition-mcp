@@ -1,3 +1,7 @@
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { config as loadDotEnv } from "dotenv";
 import { z } from "zod";
 
 export const configSchema = z.object({
@@ -10,6 +14,8 @@ export const configSchema = z.object({
 export type Config = z.infer<typeof configSchema>;
 
 export function loadConfig(): Config {
+  loadEnvFile();
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -27,4 +33,15 @@ export function loadConfig(): Config {
   };
 
   return configSchema.parse(raw);
+}
+
+function loadEnvFile(): void {
+  const moduleDir = dirname(fileURLToPath(import.meta.url));
+  const envPath = resolve(moduleDir, "..", ".env");
+  if (!existsSync(envPath)) return;
+
+  const result = loadDotEnv({ path: envPath });
+  if (result.error) {
+    throw new Error(`Failed to load .env file at ${envPath}: ${result.error.message}`);
+  }
 }

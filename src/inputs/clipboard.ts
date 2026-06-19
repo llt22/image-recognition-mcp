@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { ResolvedImage } from "./types.js";
+import { MAX_IMAGE_BYTES, validateImageBytes } from "./image.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -39,7 +40,7 @@ export async function fromClipboard(): Promise<ResolvedImage> {
 
   // pngpaste writes PNG to stdout when given `-`.
   const { stdout } = await execFileAsync("pngpaste", ["-"], {
-    maxBuffer: 50 * 1024 * 1024,
+    maxBuffer: MAX_IMAGE_BYTES,
     encoding: "buffer",
   });
 
@@ -48,6 +49,7 @@ export async function fromClipboard(): Promise<ResolvedImage> {
       "Clipboard does not contain an image. Copy a screenshot first (e.g. Ctrl+Cmd+Shift+4).",
     );
   }
+  validateImageBytes(stdout, "image/png", "clipboard image");
 
   return {
     kind: "base64",
