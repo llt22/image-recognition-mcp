@@ -1,7 +1,7 @@
 {
   "name": "image-recognition-mcp",
   "version": "0.1.0",
-  "description": "MCP server that gives vision-less LLMs image recognition via OpenAI GPT-4o.",
+  "description": "Clipboard-first MCP server that gives vision-less LLMs image recognition via OpenAI-compatible vision models.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

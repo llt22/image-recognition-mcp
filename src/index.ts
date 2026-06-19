@@ -6,7 +6,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./config.js";
 import { OpenAIProvider } from "./providers/openai.js";
-import { makeRecognizeHandler, recognizeSchema } from "./tools/recognize.js";
+import {
+  clipboardSchema,
+  makeClipboardHandler,
+  makeRecognizeHandler,
+  recognizeSchema,
+} from "./tools/recognize.js";
 
 function readPackageJson(): { version: string } {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
@@ -37,10 +42,19 @@ function start() {
 
   server.tool(
     "recognize_image",
-    "Recognize and analyze an image using GPT-4o vision. Use this when you cannot see images directly. " +
-      "Supports local file paths, http(s) URLs, base64 / data URLs, and \"clipboard\" (latest screenshot).",
+    "Recognize and analyze an image using the configured vision model. " +
+      "If no image is provided, reads the current clipboard image. " +
+      "Also supports local file paths, http(s) URLs, base64, data URLs, and the literal \"clipboard\".",
     recognizeSchema,
     makeRecognizeHandler(provider),
+  );
+
+  server.tool(
+    "analyze_clipboard_image",
+    "Analyze the current clipboard image or latest screenshot using the configured vision model. " +
+      "Use this when the user asks to inspect a screenshot/image but did not provide a path or URL.",
+    clipboardSchema,
+    makeClipboardHandler(provider),
   );
 
   const transport = new StdioServerTransport();

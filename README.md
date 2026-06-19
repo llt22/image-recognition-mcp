@@ -1,21 +1,21 @@
 # image-recognition-mcp
 
-An [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to recognize images, by proxying to OpenAI's GPT-4o vision API.
+An [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to recognize clipboard screenshots and images, by proxying to a configured OpenAI-compatible vision model.
 
-If your coding agent (like ZCode running on a text-only model) can't see images, register this server once and it gains a `recognize_image` tool that returns a textual description / OCR / answer about any image.
+If your coding agent (like ZCode running on a text-only model) can't see images, register this server once and it gains clipboard-first image analysis tools that return a textual description / OCR / answer about screenshots and images.
 
 ```
-LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI API──► GPT-4o ──► text result
+LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-compatible API──► vision model ──► text result
 ```
 
 ## Features
 
-- 🖼️ One tool: `recognize_image`
+- 🖼️ Two tools: `analyze_clipboard_image` for screenshots, `recognize_image` for any supported image input
 - 📥 Four input forms:
+  - Current clipboard image / latest screenshot (default)
   - Local file path (`/Users/x/a.png`, `./pic.jpg`, `~/Desktopshot.png`)
   - HTTP/HTTPS URL (passed straight to OpenAI)
   - Base64 string or `data:image/...;base64,...` data URL
-  - `"clipboard"` — grabs the latest screenshot from the macOS clipboard
 - 🔧 Configurable model (`gpt-4o-mini` by default), detail level, max tokens, timeout
 - 🛡️ Validates local / base64 / clipboard images before sending them upstream
 - 🧱 stdio transport — works with any MCP-compatible host (ZCode, Claude Desktop, etc.)
@@ -24,7 +24,10 @@ LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI API�
 
 - Node.js ≥ 20
 - An OpenAI API key with access to `gpt-4o` / `gpt-4o-mini`
-- For clipboard capture on macOS: [`pngpaste`](https://github.com/jcsalterego/pngpaste) (`brew install pngpaste`)
+- Clipboard capture:
+  - macOS: [`pngpaste`](https://github.com/jcsalterego/pngpaste) (`brew install pngpaste`)
+  - Windows: Windows PowerShell (`powershell.exe`, built in)
+  - Linux: `wl-paste` from `wl-clipboard` on Wayland, or `xclip` on X11
 
 ## Install
 
@@ -79,11 +82,11 @@ Add an entry to your ZCode MCP config. The config file lives at `~/.zcode/v2/con
 }
 ```
 
-Restart ZCode, then ask it something like:
+Restart ZCode, then copy a screenshot to your clipboard and ask it something like:
 
-> "Recognize the image at /Users/me/Desktop/screenshot.png — what text is shown?"
+> "Analyze the screenshot in my clipboard — what text is shown?"
 
-The agent will call `recognize_image` and get back a textual description it can reason about.
+The agent should call `analyze_clipboard_image` or `recognize_image` with its default clipboard input, then reason over the returned text.
 
 ## Register with Claude Desktop
 
@@ -103,11 +106,21 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ## Tool reference
 
+### `analyze_clipboard_image`
+
+| Parameter    | Type                          | Required | Default                                                                  | Description                                            |
+| ------------ | ----------------------------- | -------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `prompt`     | string                        | no       | `Describe this image in detail, including any visible text (OCR).`       | Question or instruction about the image                |
+| `detail`     | `"auto"` \| `"low"` \| `"high"` | no       | `auto`                                                                   | Vision detail level. `low` is cheaper/faster.          |
+| `maxTokens`  | integer                       | no       | `1024`                                                                   | Max tokens for the response                            |
+
+Reads the current clipboard image / latest screenshot.
+
 ### `recognize_image`
 
 | Parameter    | Type                          | Required | Default                                                                  | Description                                            |
 | ------------ | ----------------------------- | -------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
-| `image`      | string                        | yes      | —                                                                        | Path / URL / data URL / base64 / `"clipboard"`         |
+| `image`      | string                        | no       | `"clipboard"`                                                            | Path / URL / data URL / base64 / `"clipboard"`         |
 | `prompt`     | string                        | no       | `Describe this image in detail, including any visible text (OCR).`       | Question or instruction about the image                |
 | `detail`     | `"auto"` \| `"low"` \| `"high"` | no       | `auto`                                                                   | Vision detail level. `low` is cheaper/faster.          |
 | `maxTokens`  | integer                       | no       | `1024`                                                                   | Max tokens for the response                            |
@@ -133,10 +146,11 @@ image-recognition-mcp/
     └── inputs/
         ├── index.ts          # resolveImage() dispatcher
         ├── types.ts
+        ├── image.ts          # image MIME / size / magic-byte validation
         ├── file.ts           # local path → base64
         ├── url.ts            # HTTP(S) URL passthrough
         ├── base64.ts         # base64 / data URL
-        └── clipboard.ts      # macOS clipboard via pngpaste
+        └── clipboard.ts      # clipboard image capture for macOS / Windows / Linux
 ```
 
 ## License
