@@ -6,6 +6,11 @@ export type ResolvedImage =
   | { kind: "url"; url: string }
   | { kind: "base64"; data: string; mimeType: string };
 
+export interface ResolveImageOptions {
+  localFileInputEnabled?: boolean;
+  localFileAllowedRoots?: string[];
+}
+
 export interface ImageInput {
   /** Raw input from the tool caller: path / http(s) URL / data URL / base64 / "clipboard". */
   raw: string;

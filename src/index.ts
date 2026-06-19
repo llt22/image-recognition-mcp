@@ -8,6 +8,10 @@ import { loadConfig } from "./config.js";
 import { OpenAIProvider } from "./providers/openai.js";
 import {
   clipboardSchema,
+  DIAGNOSE_ERROR_PROMPT,
+  diagnoseClipboardErrorSchema,
+  EXTRACT_TEXT_PROMPT,
+  extractClipboardTextSchema,
   makeClipboardHandler,
   makeRecognizeHandler,
   recognizeSchema,
@@ -36,7 +40,7 @@ function start() {
   const pkg = readPackageJson();
 
   const server = new McpServer({
-    name: "image-recognition-mcp",
+    name: "clipboard-vision",
     version: pkg.version,
   });
 
@@ -46,7 +50,7 @@ function start() {
       "If no image is provided, reads the current clipboard image. " +
       "Also supports local file paths, http(s) URLs, base64, data URLs, and the literal \"clipboard\".",
     recognizeSchema,
-    makeRecognizeHandler(provider),
+    makeRecognizeHandler(provider, config),
   );
 
   server.tool(
@@ -54,7 +58,23 @@ function start() {
     "Analyze the current clipboard image or latest screenshot using the configured vision model. " +
       "Use this when the user asks to inspect a screenshot/image but did not provide a path or URL.",
     clipboardSchema,
-    makeClipboardHandler(provider),
+    makeClipboardHandler(provider, config),
+  );
+
+  server.tool(
+    "extract_clipboard_text",
+    "Extract visible text from the current clipboard image or latest screenshot. " +
+      "Use this for OCR, code snippets, logs, forms, tables, or text-heavy screenshots.",
+    extractClipboardTextSchema,
+    makeClipboardHandler(provider, config, EXTRACT_TEXT_PROMPT),
+  );
+
+  server.tool(
+    "diagnose_clipboard_error",
+    "Diagnose errors shown in the current clipboard screenshot. " +
+      "Use this for stack traces, terminal output, failed tests, build errors, or UI failure states.",
+    diagnoseClipboardErrorSchema,
+    makeClipboardHandler(provider, config, DIAGNOSE_ERROR_PROMPT),
   );
 
   const transport = new StdioServerTransport();

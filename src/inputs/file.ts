@@ -1,6 +1,7 @@
-import { readFile, stat } from "node:fs/promises";
+import { readFile, realpath, stat } from "node:fs/promises";
 import { existsSync, type Stats } from "node:fs";
-import { ResolvedImage } from "./types.js";
+import { isAbsolute, relative, resolve } from "node:path";
+import type { ResolvedImage, ResolveImageOptions } from "./types.js";
 import { assertImageSize, mimeTypeForPath, validateImageBytes } from "./image.js";
 
 export function looksLikeFilePath(input: string): boolean {
@@ -15,7 +16,16 @@ export function looksLikeFilePath(input: string): boolean {
   );
 }
 
-export async function fromFile(path: string): Promise<ResolvedImage> {
+export async function fromFile(
+  path: string,
+  options: ResolveImageOptions = {},
+): Promise<ResolvedImage> {
+  if (options.localFileInputEnabled === false) {
+    throw new Error(
+      "Local image file input is disabled. Use clipboard, URL, or base64 input instead.",
+    );
+  }
+
   const expanded = path.startsWith("~/")
     ? (() => {
         const home = process.env.HOME;
@@ -23,14 +33,25 @@ export async function fromFile(path: string): Promise<ResolvedImage> {
         return `${home}${path.slice(1)}`;
       })()
     : path;
+  const absolutePath = resolve(expanded);
 
-  let fileStat: Stats;
+  let realFilePath: string;
   try {
-    fileStat = await stat(expanded);
+    realFilePath = await realpath(absolutePath);
   } catch (err) {
     if (isNodeError(err) && err.code === "ENOENT") {
       throw new Error(`Image file not found: ${path}`);
     }
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Unable to resolve image file path for ${path}: ${message}`);
+  }
+
+  await assertAllowedLocalPath(realFilePath, options.localFileAllowedRoots ?? []);
+
+  let fileStat: Stats;
+  try {
+    fileStat = await stat(realFilePath);
+  } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(`Unable to read image file metadata for ${path}: ${message}`);
   }
@@ -38,10 +59,10 @@ export async function fromFile(path: string): Promise<ResolvedImage> {
     throw new Error(`Image path is not a file: ${path}`);
   }
 
-  const mimeType = mimeTypeForPath(expanded);
+  const mimeType = mimeTypeForPath(realFilePath);
   assertImageSize(fileStat.size, `Image file ${path}`);
 
-  const data = await readFile(expanded);
+  const data = await readFile(realFilePath);
   validateImageBytes(data, mimeType, `Image file ${path}`);
   return {
     kind: "base64",
@@ -52,4 +73,41 @@ export async function fromFile(path: string): Promise<ResolvedImage> {
 
 function isNodeError(err: unknown): err is NodeJS.ErrnoException {
   return err instanceof Error && "code" in err;
+}
+
+async function assertAllowedLocalPath(
+  filePath: string,
+  allowedRoots: string[],
+): Promise<void> {
+  if (allowedRoots.length === 0 || allowedRoots.includes("*")) return;
+
+  const normalizedRoots = await Promise.all(
+    allowedRoots.map((root) => resolveAllowedRoot(root)),
+  );
+  const isAllowed = normalizedRoots.some((root) => {
+    const relativePath = relative(root, filePath);
+    return relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath));
+  });
+
+  if (!isAllowed) {
+    throw new Error(
+      `Image file is outside VISION_ALLOWED_LOCAL_ROOTS: ${filePath}`,
+    );
+  }
+}
+
+async function resolveAllowedRoot(root: string): Promise<string> {
+  try {
+    return await realpath(resolve(expandHome(root)));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Invalid VISION_ALLOWED_LOCAL_ROOTS entry ${root}: ${message}`);
+  }
+}
+
+function expandHome(path: string): string {
+  if (!path.startsWith("~/")) return path;
+  const home = process.env.HOME;
+  if (!home) throw new Error("Cannot resolve ~ path: HOME environment variable is not set.");
+  return `${home}${path.slice(1)}`;
 }
