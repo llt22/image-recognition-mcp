@@ -1,5 +1,7 @@
 # image-recognition-mcp
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 An [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to recognize clipboard screenshots and images, by proxying to a configured OpenAI-compatible vision model.
 
 If your coding agent (like ZCode running on a text-only model) can't see images, register this server once and it gains clipboard-first image analysis tools that return a textual description / OCR / answer about screenshots and images.
