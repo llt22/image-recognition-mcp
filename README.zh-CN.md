@@ -38,6 +38,14 @@ LLM（无视觉）──MCP/stdio──► image-recognition-mcp ──OpenAI-co
 
 ## 安装
 
+从 npm 安装：
+
+```bash
+npm install -g @llt22/image-recognition-mcp
+```
+
+或从源码运行：
+
 ```bash
 git clone <this-repo> image-recognition-mcp
 cd image-recognition-mcp
@@ -97,14 +105,14 @@ npm run build && npm start
 
 ## 注册到 ZCode
 
-在 ZCode MCP 配置中添加一项。配置文件路径为 `~/.zcode/v2/config.json`，找到 `mcpServers` 字段并加入以下内容。`dist/index.js` 必须使用绝对路径。
+在 ZCode MCP 配置中添加一项。配置文件路径为 `~/.zcode/v2/config.json`，找到 `mcpServers` 字段并加入以下内容。
 
 ```jsonc
 {
   "mcpServers": {
     "clipboard-vision": {
-      "command": "node",
-      "args": ["/Volumes/wd-512/WebstormProjects/image-recognition-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@llt22/image-recognition-mcp"],
       "env": {
         "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
         "OPENAI_MODEL": "gpt-4o-mini"
@@ -113,6 +121,8 @@ npm run build && npm start
   }
 }
 ```
+
+如果你从本地 clone 的源码运行，则改用 `command: "node"`，并把 `args` 指向 `dist/index.js` 的绝对路径。
 
 重启 ZCode，截个图复制到剪贴板，然后可以这样问：
 
@@ -128,8 +138,8 @@ Agent 通常会调用 `analyze_clipboard_image`，或使用默认剪贴板输入
 {
   "mcpServers": {
     "clipboard-vision": {
-      "command": "node",
-      "args": ["/abs/path/to/image-recognition-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@llt22/image-recognition-mcp"],
       "env": { "OPENAI_API_KEY": "sk-..." }
     }
   }

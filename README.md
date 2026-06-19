@@ -38,6 +38,14 @@ LLM (no vision) ──MCP/stdio──► image-recognition-mcp ──OpenAI-comp
 
 ## Install
 
+From npm:
+
+```bash
+npm install -g @llt22/image-recognition-mcp
+```
+
+Or from source:
+
 ```bash
 git clone <this-repo> image-recognition-mcp
 cd image-recognition-mcp
@@ -97,14 +105,14 @@ The server speaks MCP over stdio — it expects JSON-RPC frames on stdin and wri
 
 ## Register with ZCode
 
-Add an entry to your ZCode MCP config. The config file is at `~/.zcode/v2/config.json` (look for the `mcpServers` key). The absolute path to `dist/index.js` must be used.
+Add an entry to your ZCode MCP config. The config file is at `~/.zcode/v2/config.json` (look for the `mcpServers` key).
 
 ```jsonc
 {
   "mcpServers": {
     "clipboard-vision": {
-      "command": "node",
-      "args": ["/Volumes/wd-512/WebstormProjects/image-recognition-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@llt22/image-recognition-mcp"],
       "env": {
         "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
         "OPENAI_MODEL": "gpt-4o-mini"
@@ -113,6 +121,8 @@ Add an entry to your ZCode MCP config. The config file is at `~/.zcode/v2/config
   }
 }
 ```
+
+If you run from a local clone instead, use `command: "node"` with an absolute path to `dist/index.js`.
 
 Restart ZCode, then copy a screenshot to your clipboard and ask it something like:
 
@@ -128,8 +138,8 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "clipboard-vision": {
-      "command": "node",
-      "args": ["/abs/path/to/image-recognition-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@llt22/image-recognition-mcp"],
       "env": { "OPENAI_API_KEY": "sk-..." }
     }
   }

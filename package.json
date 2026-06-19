@@ -1,5 +1,5 @@
 {
-  "name": "image-recognition-mcp",
+  "name": "@llt22/image-recognition-mcp",
   "version": "0.1.0",
   "description": "Clipboard-first MCP server that gives vision-less LLMs image recognition via OpenAI-compatible vision models.",
   "type": "module",
@@ -7,6 +7,12 @@
   "bin": {
     "image-recognition-mcp": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "README.zh-CN.md",
+    ".env.example"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
@@ -16,7 +22,25 @@
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/llt22/image-recognition-mcp.git"
+  },
+  "homepage": "https://github.com/llt22/image-recognition-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/llt22/image-recognition-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "vision",
+    "clipboard",
+    "ocr",
+    "openai-compatible"
+  ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "dotenv": "^16.6.1",
