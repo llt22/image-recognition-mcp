@@ -2,49 +2,25 @@
 
 [中文](README.md) | [English](README.en.md)
 
-如果你的编码助手或 AI 工具用的是纯文本模型，每次截图都得手动描述或者切到带视觉的工具里处理，这个 MCP 服务就是来解决这个问题的。
-
-只需注册一次，它就能让**没有视觉能力的 LLM** 看懂你剪贴板里的截图——自动把图片转给 OpenAI-compatible 视觉模型，拿回文字描述、OCR 结果或相关分析。
+给你的编码助手或 AI 工具装上"眼睛"——注册这个 MCP 服务，它就能看懂你剪贴板里的截图。自动把图片发给 OpenAI-compatible 视觉模型，拿回文字描述、OCR 结果或分析。
 
 ```text
 LLM（无视觉）──MCP/stdio──► clipboard-vision-mcp ──OpenAI-compatible API──► 视觉模型 ──► 文本结果
 ```
 
-## 功能
+## 快速开始
 
-- 四个专用工具：
-  - `analyze_clipboard_image`：通用截图分析，适合"这张图里有什么"这类问题
-  - `extract_clipboard_text`：偏 OCR，专门提取截图中的文字，保留换行和代码格式
-  - `diagnose_clipboard_error`：调试利器，分析报错截图、堆栈、终端输出或异常的 UI 状态
-  - `recognize_image`：最灵活的工具，支持剪贴板、本地文件、URL、data URL 和 base64 图片输入
-- 四种图片来源：
-  - 当前剪贴板图片（默认，也是最常用的方式）
-  - 本地文件路径，例如 `/Users/x/a.png`、`./pic.jpg`、`~/Desktop/shot.png`
-  - HTTP/HTTPS URL，直接传给 OpenAI-compatible API
-  - Base64 字符串或 `data:image/...;base64,...` data URL
-- 可配置 OpenAI-compatible provider、模型（默认 `gpt-4o-mini`）、detail 级别、最大 token 数和超时时间
-- 发送前校验本地、base64 和剪贴板图片的格式与大小
-- 支持关闭本地文件输入，或用 allowlist 限制可读取的目录
-- stdio transport，兼容任意 MCP host（ZCode、Claude Desktop 等）
+### 1. 准备运行环境
 
-## 前置要求
+需要 **Node.js ≥ 20**，以及一个**能访问视觉模型的 OpenAI-compatible API key**（可在下面的 MCP Host 配置中填入）。
 
-- Node.js ≥ 20
-- 一个能访问视觉模型的 OpenAI-compatible API key
-- 剪贴板图片读取工具：
-  - macOS：[`pngpaste`](https://github.com/jcsalterego/pngpaste)（`brew install pngpaste`）
-  - Windows：系统内置 PowerShell（`powershell.exe`）
-  - Linux：Wayland 用 `wl-clipboard` 的 `wl-paste`，X11 用 `xclip`
-
-## 安装
-
-从 npm 安装：
+最简单的用法是直接在 MCP Host 配置里用 `npx -y clipboard-vision-mcp`，不需要提前全局安装。想先在本机装好命令，也可以执行：
 
 ```bash
 npm install -g clipboard-vision-mcp
 ```
 
-或从源码运行：
+从源码调试时再 clone 仓库运行：
 
 ```bash
 git clone <this-repo> image-recognition-mcp
@@ -53,13 +29,68 @@ npm install
 npm run build
 ```
 
-## 配置
+### 2. 准备剪贴板工具
 
-复制 `.env.example` 为 `.env`，填入你的 key。服务启动时会自动读取项目根目录的 `.env`，同时保留 MCP host 已传入的环境变量。
+系统需要能读取剪贴板中的图片：
+
+- **macOS**：安装 [pngpaste](https://github.com/jcsalterego/pngpaste)（`brew install pngpaste`）
+- **Windows**：系统内置 PowerShell，无需额外安装
+- **Linux Wayland**：`wl-clipboard` 的 `wl-paste`
+- **Linux X11**：`xclip`
+
+### 3. 配置 MCP Host
+
+在你的 MCP Host（ZCode、Claude Desktop 等）配置文件中找到 `mcpServers` 字段，添加以下内容：
+
+```jsonc
+{
+  "mcpServers": {
+    "clipboard-vision": {
+      "command": "npx",
+      "args": ["-y", "clipboard-vision-mcp"],
+      "env": {
+        "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
+        "OPENAI_MODEL": "gpt-4o-mini"
+      }
+    }
+  }
+}
+```
+
+配置路径参考：ZCode 在 `~/.zcode/v2/config.json`，Claude Desktop 在 `~/Library/Application Support/Claude/claude_desktop_config.json`。
+
+如果从本地 clone 运行，改用 `"command": "node"`，`args` 指向 `dist/index.js` 的绝对路径。
+
+### 4. 验证
+
+复制一张截图到剪贴板，然后向你的 AI 助手提问：
+
+> 分析我剪贴板里的截图，上面有什么文字？
+
+如果 MCP Host 已正确加载服务，助手通常会调用 `analyze_clipboard_image`，或使用默认剪贴板输入的 `recognize_image`，然后返回图片中的文字内容。
+
+## 功能
+
+- 四个专用工具，适配不同场景：
+  - `analyze_clipboard_image`：通用截图分析，适合"这张图里有什么"
+  - `extract_clipboard_text`：偏 OCR，提取截图中的文字，保留换行和代码格式
+  - `diagnose_clipboard_error`：调试利器，分析报错截图、堆栈、终端输出或异常 UI 状态
+  - `recognize_image`：最灵活的工具，支持剪贴板、本地文件、URL、data URL 和 base64 图片
+- 四种图片来源：剪贴板（默认）、本地文件路径、HTTP(S) URL、base64 / data URL
+- 可配置 OpenAI-compatible provider、模型（默认 `gpt-4o-mini`）、detail 级别、最大 token 数和超时
+- 发送前校验本地、base64 和剪贴板图片的格式与大小
+- 支持关闭本地文件输入，或用 allowlist 限制可读取的目录
+- stdio transport，兼容任意 MCP Host
+
+## 配置项
+
+除在 MCP Host 的 `env` 中直接设置外，也支持项目根目录的 `.env` 文件：
 
 ```bash
 cp .env.example .env
 ```
+
+服务启动时会自动加载 `.env`，同时保留 MCP Host 已传入的环境变量。
 
 | 环境变量 | 默认值 | 说明 |
 | --- | --- | --- |
@@ -68,7 +99,7 @@ cp .env.example .env
 | `OPENAI_BASE_URL` | OpenAI 默认地址 | 代理或兼容网关地址 |
 | `OPENAI_TIMEOUT_MS` | `60000` | 请求超时时间（毫秒） |
 | `LOCAL_FILE_INPUT_ENABLED` | `true` | 设为 `false` 可禁用本地文件路径输入 |
-| `LOCAL_FILE_ALLOWED_ROOTS` | 空 | 本地路径 allowlist，逗号分隔，例如 `/tmp,~/Pictures`；空表示允许所有路径 |
+| `LOCAL_FILE_ALLOWED_ROOTS` | 空 | 路径 allowlist，逗号分隔，例如 `/tmp,~/Pictures`；空表示允许所有路径 |
 
 Provider 示例：
 
@@ -91,59 +122,6 @@ OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 OPENAI_API_KEY=...
 OPENAI_MODEL=your-vision-model
 OPENAI_BASE_URL=http://localhost:4000/v1
-```
-
-## 本地运行
-
-```bash
-npm run dev      # tsx 直接运行，无需构建
-# 或
-npm run build && npm start
-```
-
-服务通过 stdio 收发 MCP 消息——从 stdin 读 JSON-RPC，向 stdout 写回响应。
-
-## 注册到 ZCode
-
-在 ZCode MCP 配置中添加一项。配置文件路径为 `~/.zcode/v2/config.json`，找到 `mcpServers` 字段并加入以下内容。
-
-```jsonc
-{
-  "mcpServers": {
-    "clipboard-vision": {
-      "command": "npx",
-      "args": ["-y", "clipboard-vision-mcp"],
-      "env": {
-        "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
-        "OPENAI_MODEL": "gpt-4o-mini"
-      }
-    }
-  }
-}
-```
-
-如果你从本地 clone 的源码运行，则改用 `command: "node"`，并把 `args` 指向 `dist/index.js` 的绝对路径。
-
-重启 ZCode，截个图复制到剪贴板，然后可以这样问：
-
-> 分析我剪贴板里的截图，上面有什么文字？
-
-Agent 通常会调用 `analyze_clipboard_image`，或使用默认剪贴板输入的 `recognize_image`，然后用返回的文字内容继续工作。
-
-## 注册到 Claude Desktop
-
-编辑 `~/Library/Application Support/Claude/claude_desktop_config.json`：
-
-```jsonc
-{
-  "mcpServers": {
-    "clipboard-vision": {
-      "command": "npx",
-      "args": ["-y", "clipboard-vision-mcp"],
-      "env": { "OPENAI_API_KEY": "sk-..." }
-    }
-  }
-}
 ```
 
 ## 工具说明
@@ -190,6 +168,16 @@ Agent 通常会调用 `analyze_clipboard_image`，或使用默认剪贴板输入
 返回 `{ content: [{ type: "text", text: "..." }] }`，失败时返回 `isError: true` 和错误信息。
 
 本地文件、data URL、原始 base64 和剪贴板输入必须是 PNG、JPEG、GIF、WebP 或 BMP 格式，单张不超过 20 MiB。HTTP/HTTPS URL 会作为 URL 直接传给 OpenAI-compatible API。
+
+## 本地运行
+
+```bash
+npm run dev      # tsx 直接运行，无需构建
+# 或
+npm run build && npm start
+```
+
+服务通过 stdio 收发 MCP 消息——从 stdin 读 JSON-RPC，向 stdout 写回响应。
 
 ## 项目结构
 
