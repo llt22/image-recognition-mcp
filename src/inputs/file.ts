@@ -17,7 +17,11 @@ export function looksLikeFilePath(input: string): boolean {
 
 export async function fromFile(path: string): Promise<ResolvedImage> {
   const expanded = path.startsWith("~/")
-    ? `${process.env.HOME ?? ""}${path.slice(1)}`
+    ? (() => {
+        const home = process.env.HOME;
+        if (!home) throw new Error("Cannot resolve ~ path: HOME environment variable is not set.");
+        return `${home}${path.slice(1)}`;
+      })()
     : path;
 
   let fileStat: Stats;

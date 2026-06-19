@@ -1,9 +1,19 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./config.js";
 import { OpenAIProvider } from "./providers/openai.js";
 import { makeRecognizeHandler, recognizeSchema } from "./tools/recognize.js";
+
+function readPackageJson(): { version: string } {
+  const moduleDir = dirname(fileURLToPath(import.meta.url));
+  const pkgPath = resolve(moduleDir, "..", "package.json");
+  const raw = readFileSync(pkgPath, "utf-8");
+  return JSON.parse(raw) as { version: string };
+}
 
 function start() {
   let config;
@@ -18,9 +28,11 @@ function start() {
 
   const provider = new OpenAIProvider(config);
 
+  const pkg = readPackageJson();
+
   const server = new McpServer({
     name: "image-recognition-mcp",
-    version: "0.1.0",
+    version: pkg.version,
   });
 
   server.tool(

@@ -6,7 +6,7 @@ export interface RecognizeOptions {
   /** What the caller wants to know about the image. */
   prompt: string;
   /** OpenAI vision detail level. "low" is cheaper/faster. */
-  detail?: "auto" | "low" | "high";
+  detail: "auto" | "low" | "high";
   /** Max tokens for the response. */
   maxTokens?: number;
 }
@@ -28,8 +28,6 @@ export class OpenAIProvider {
         ? image.url
         : `data:${image.mimeType};base64,${image.data}`;
 
-    const detail = opts.detail ?? "auto";
-
     const response = await this.client.chat.completions.create({
       model: this.config.model,
       max_tokens: opts.maxTokens ?? 1024,
@@ -38,7 +36,7 @@ export class OpenAIProvider {
           role: "user",
           content: [
             { type: "text", text: opts.prompt },
-            { type: "image_url", image_url: { url: imageUrl, detail } },
+            { type: "image_url", image_url: { url: imageUrl, detail: opts.detail } },
           ],
         },
       ],
