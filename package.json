@@ -1,0 +1,30 @@
+{
+  "name": "image-recognition-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that gives vision-less LLMs image recognition via OpenAI GPT-4o.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "image-recognition-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "openai": "^4.77.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
