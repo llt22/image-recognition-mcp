@@ -12,7 +12,7 @@ LLM (no vision) ──MCP/stdio──► clipboard-vision-mcp ──OpenAI-compa
 
 ### 1. Prepare the runtime
 
-You'll need **Node.js ≥ 20** and an **OpenAI-compatible API key** with access to a vision model (set it in the MCP Host config below).
+You'll need **Node.js ≥ 20** and an **OpenAI-compatible API key** with access to a vision model (set it in the MCP Host config below). The `OPENAI_*` variable names follow the OpenAI-compatible API convention; they do not mean you must use OpenAI's official endpoint.
 
 The simplest setup is to run the package from your MCP Host with `npx -y clipboard-vision-mcp`; no global install is required. If you prefer a local command, install it globally:
 
@@ -40,7 +40,9 @@ Your system needs a tool to read clipboard images:
 
 ### 3. Configure your MCP Host
 
-Add the following to the `mcpServers` section of your MCP Host config (ZCode, Claude Desktop, etc.):
+Add the following to the `mcpServers` section of your MCP Host config (ZCode, Claude Desktop, etc.).
+
+This example uses Qwen / DashScope. For Gemini, LiteLLM, one-api, New API, or another OpenAI-compatible gateway, replace `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`.
 
 ```jsonc
 {
@@ -49,13 +51,16 @@ Add the following to the `mcpServers` section of your MCP Host config (ZCode, Cl
       "command": "npx",
       "args": ["-y", "clipboard-vision-mcp"],
       "env": {
-        "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
-        "OPENAI_MODEL": "gpt-4o-mini"
+        "OPENAI_API_KEY": "your-api-key",
+        "OPENAI_MODEL": "qwen-vl-plus",
+        "OPENAI_BASE_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1"
       }
     }
   }
 }
 ```
+
+If you use OpenAI's official endpoint, remove `OPENAI_BASE_URL` and set `OPENAI_MODEL` to a vision-capable OpenAI model, such as `gpt-4o-mini`.
 
 File paths: ZCode config at `~/.zcode/v2/config.json`, Claude Desktop at `~/Library/Application Support/Claude/claude_desktop_config.json`.
 
@@ -96,7 +101,7 @@ The server loads `.env` on startup while keeping any env vars already provided b
 | --- | --- | --- |
 | `OPENAI_API_KEY` | — (required) | OpenAI-compatible API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Vision model |
-| `OPENAI_BASE_URL` | OpenAI default | Proxy or compatible gateway URL |
+| `OPENAI_BASE_URL` | OpenAI default | OpenAI-compatible gateway URL; omit it for OpenAI's official endpoint |
 | `OPENAI_TIMEOUT_MS` | `60000` | Request timeout (milliseconds) |
 | `LOCAL_FILE_INPUT_ENABLED` | `true` | Set to `false` to disable local file path input |
 | `LOCAL_FILE_ALLOWED_ROOTS` | — | Comma-separated allowlist, e.g. `/tmp,~/Pictures`; empty allows all |
@@ -104,24 +109,24 @@ The server loads `.env` on startup while keeping any env vars already provided b
 Provider examples:
 
 ```bash
-# OpenAI
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+# Qwen / DashScope OpenAI-compatible endpoint
+OPENAI_API_KEY=...
+OPENAI_MODEL=qwen-vl-plus
+OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 
 # Gemini OpenAI-compatible endpoint
 OPENAI_API_KEY=...
 OPENAI_MODEL=gemini-2.5-flash
 OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 
-# Qwen / DashScope OpenAI-compatible endpoint
-OPENAI_API_KEY=...
-OPENAI_MODEL=qwen-vl-plus
-OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-
 # LiteLLM or a self-hosted OpenAI-compatible gateway
 OPENAI_API_KEY=...
 OPENAI_MODEL=your-vision-model
 OPENAI_BASE_URL=http://localhost:4000/v1
+
+# OpenAI official endpoint
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 ## Tool reference

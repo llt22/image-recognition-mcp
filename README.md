@@ -12,7 +12,7 @@ LLM（无视觉）──MCP/stdio──► clipboard-vision-mcp ──OpenAI-com
 
 ### 1. 准备运行环境
 
-需要 **Node.js ≥ 20**，以及一个**能访问视觉模型的 OpenAI-compatible API key**（可在下面的 MCP Host 配置中填入）。
+需要 **Node.js ≥ 20**，以及一个**能访问视觉模型的 OpenAI-compatible API key**（可在下面的 MCP Host 配置中填入）。这里的 `OPENAI_*` 变量名只是沿用 OpenAI-compatible 接口习惯，不代表只能使用 OpenAI 官方模型。
 
 最简单的用法是直接在 MCP Host 配置里用 `npx -y clipboard-vision-mcp`，不需要提前全局安装。想先在本机装好命令，也可以执行：
 
@@ -40,7 +40,9 @@ npm run build
 
 ### 3. 配置 MCP Host
 
-在你的 MCP Host（ZCode、Claude Desktop 等）配置文件中找到 `mcpServers` 字段，添加以下内容：
+在你的 MCP Host（ZCode、Claude Desktop 等）配置文件中找到 `mcpServers` 字段，添加以下内容。
+
+下面用 Qwen / DashScope 举例；如果你用 Gemini、LiteLLM、one-api、New API 或其他 OpenAI-compatible 网关，只需要替换 `OPENAI_API_KEY`、`OPENAI_MODEL` 和 `OPENAI_BASE_URL`。
 
 ```jsonc
 {
@@ -49,13 +51,16 @@ npm run build
       "command": "npx",
       "args": ["-y", "clipboard-vision-mcp"],
       "env": {
-        "OPENAI_API_KEY": "sk-xxxxxxxxxxxxxxxx",
-        "OPENAI_MODEL": "gpt-4o-mini"
+        "OPENAI_API_KEY": "your-api-key",
+        "OPENAI_MODEL": "qwen-vl-plus",
+        "OPENAI_BASE_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1"
       }
     }
   }
 }
 ```
+
+如果你确实使用 OpenAI 官方接口，可以删掉 `OPENAI_BASE_URL`，并把模型改成支持视觉的 OpenAI 模型，例如 `gpt-4o-mini`。
 
 配置路径参考：ZCode 在 `~/.zcode/v2/config.json`，Claude Desktop 在 `~/Library/Application Support/Claude/claude_desktop_config.json`。
 
@@ -96,7 +101,7 @@ cp .env.example .env
 | --- | --- | --- |
 | `OPENAI_API_KEY` | 必填 | OpenAI-compatible API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | 视觉模型名 |
-| `OPENAI_BASE_URL` | OpenAI 默认地址 | 代理或兼容网关地址 |
+| `OPENAI_BASE_URL` | OpenAI 默认地址 | OpenAI-compatible 网关地址；使用 OpenAI 官方时可不填 |
 | `OPENAI_TIMEOUT_MS` | `60000` | 请求超时时间（毫秒） |
 | `LOCAL_FILE_INPUT_ENABLED` | `true` | 设为 `false` 可禁用本地文件路径输入 |
 | `LOCAL_FILE_ALLOWED_ROOTS` | 空 | 路径 allowlist，逗号分隔，例如 `/tmp,~/Pictures`；空表示允许所有路径 |
@@ -104,24 +109,24 @@ cp .env.example .env
 Provider 示例：
 
 ```bash
-# OpenAI
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+# Qwen / DashScope OpenAI-compatible 端点
+OPENAI_API_KEY=...
+OPENAI_MODEL=qwen-vl-plus
+OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 
 # Gemini OpenAI-compatible 端点
 OPENAI_API_KEY=...
 OPENAI_MODEL=gemini-2.5-flash
 OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 
-# Qwen / DashScope OpenAI-compatible 端点
-OPENAI_API_KEY=...
-OPENAI_MODEL=qwen-vl-plus
-OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-
 # LiteLLM 或自托管 OpenAI-compatible 网关
 OPENAI_API_KEY=...
 OPENAI_MODEL=your-vision-model
 OPENAI_BASE_URL=http://localhost:4000/v1
+
+# OpenAI 官方接口
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 ## 工具说明
