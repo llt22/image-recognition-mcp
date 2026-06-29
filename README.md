@@ -1,5 +1,7 @@
 # clipboard-vision-mcp
 
+[![LINUX DO](https://img.shields.io/badge/LINUX--DO-Community-blue?style=flat)](https://linux.do/)
+
 [中文](README.md) | [English](README.en.md)
 
 给你的编码助手或 AI 工具装上"眼睛"——注册这个 MCP 服务，它就能看懂你剪贴板里的截图。自动把图片发给 OpenAI-compatible 视觉模型，拿回文字描述、OCR 结果或分析。

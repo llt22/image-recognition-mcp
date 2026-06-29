@@ -1,5 +1,7 @@
 # clipboard-vision-mcp
 
+[![LINUX DO](https://img.shields.io/badge/LINUX--DO-Community-blue?style=flat)](https://linux.do/)
+
 [中文](README.md) | [English](README.en.md)
 
 A clipboard-first [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to understand clipboard screenshots. It proxies the image to a configured OpenAI-compatible vision model and returns text descriptions, OCR results, or analysis.
