@@ -14,6 +14,7 @@ const CLIPBOARD_COMMAND_TIMEOUT_MS = 10_000;
 const CLIPBOARD_MIME_TYPES = [
   "image/png",
   "image/jpeg",
+  "image/gif",
   "image/webp",
   "image/bmp",
 ] as const;
