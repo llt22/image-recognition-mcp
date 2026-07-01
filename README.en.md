@@ -25,13 +25,11 @@ You need:
   - Linux Wayland: `wl-paste` from `wl-clipboard`
   - Linux X11: `xclip`
 
-You do not need to install the package globally. The recommended setup is to run it from your MCP Host with `npx -y clipboard-vision-mcp`.
-
 Package page: [clipboard-vision-mcp on npm](https://www.npmjs.com/package/clipboard-vision-mcp)
 
 ### 2. Configure Your MCP Host
 
-Add this to the `mcpServers` section of your MCP Host config (ZCode, Claude Desktop, etc.):
+Add this to the `mcpServers` section of your MCP Host config, and fill `env` for your OpenAI-compatible provider:
 
 ```jsonc
 {
@@ -41,20 +39,13 @@ Add this to the `mcpServers` section of your MCP Host config (ZCode, Claude Desk
       "args": ["-y", "clipboard-vision-mcp"],
       "env": {
         "OPENAI_API_KEY": "your-api-key",
-        "OPENAI_MODEL": "qwen-vl-plus",
-        "OPENAI_BASE_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        "OPENAI_MODEL": "your-vision-model",
+        "OPENAI_BASE_URL": "https://your-openai-compatible-endpoint/v1"
       }
     }
   }
 }
 ```
-
-This example uses Qwen / DashScope. If you use OpenAI's official endpoint, remove `OPENAI_BASE_URL` and set `OPENAI_MODEL` to a vision-capable OpenAI model, such as `gpt-4o-mini`.
-
-Common config paths:
-
-- ZCode: `~/.zcode/v2/config.json`
-- Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ### 3. Verify
 
@@ -94,7 +85,7 @@ Besides setting environment variables in the MCP Host's `env` block, you can als
 | --- | --- | --- |
 | `OPENAI_API_KEY` | — (required) | OpenAI-compatible API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Vision model |
-| `OPENAI_BASE_URL` | OpenAI default | OpenAI-compatible gateway URL; omit it for OpenAI's official endpoint |
+| `OPENAI_BASE_URL` | OpenAI default | OpenAI-compatible gateway URL |
 | `OPENAI_TIMEOUT_MS` | `60000` | Request timeout in milliseconds |
 | `LOCAL_FILE_INPUT_ENABLED` | `true` | Set to `false` to disable local file path input |
 | `LOCAL_FILE_ALLOWED_ROOTS` | — | Comma-separated allowlist, e.g. `/tmp,~/Pictures`; empty allows all |
@@ -102,24 +93,9 @@ Besides setting environment variables in the MCP Host's `env` block, you can als
 Provider examples:
 
 ```bash
-# Qwen / DashScope
-OPENAI_API_KEY=...
-OPENAI_MODEL=qwen-vl-plus
-OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-
-# Gemini OpenAI-compatible endpoint
-OPENAI_API_KEY=...
-OPENAI_MODEL=gemini-2.5-flash
-OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-
-# LiteLLM or a self-hosted OpenAI-compatible gateway
 OPENAI_API_KEY=...
 OPENAI_MODEL=your-vision-model
-OPENAI_BASE_URL=http://localhost:4000/v1
-
-# OpenAI official endpoint
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
 ```
 
 Local files, data URLs, raw base64, and clipboard inputs must be PNG, JPEG, GIF, WebP, or BMP images up to 20 MiB. HTTP/HTTPS URLs are passed directly to the OpenAI-compatible API.

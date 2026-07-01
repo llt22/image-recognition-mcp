@@ -25,13 +25,11 @@ LLM（无视觉）──MCP/stdio──► clipboard-vision-mcp ──OpenAI-com
   - Linux Wayland：`wl-paste`（来自 `wl-clipboard`）
   - Linux X11：`xclip`
 
-不需要提前安装 npm 包；推荐直接在 MCP Host 配置里使用 `npx -y clipboard-vision-mcp`。
-
 包地址：[clipboard-vision-mcp on npm](https://www.npmjs.com/package/clipboard-vision-mcp)
 
 ### 2. 配置 MCP Host
 
-在 MCP Host（ZCode、Claude Desktop 等）的 `mcpServers` 中添加：
+在 MCP Host 的 `mcpServers` 中添加，并按你的 OpenAI-compatible provider 填写 `env`：
 
 ```jsonc
 {
@@ -41,20 +39,13 @@ LLM（无视觉）──MCP/stdio──► clipboard-vision-mcp ──OpenAI-com
       "args": ["-y", "clipboard-vision-mcp"],
       "env": {
         "OPENAI_API_KEY": "your-api-key",
-        "OPENAI_MODEL": "qwen-vl-plus",
-        "OPENAI_BASE_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        "OPENAI_MODEL": "your-vision-model",
+        "OPENAI_BASE_URL": "https://your-openai-compatible-endpoint/v1"
       }
     }
   }
 }
 ```
-
-上面用 Qwen / DashScope 举例。使用 OpenAI 官方接口时，可以删掉 `OPENAI_BASE_URL`，并把模型改成支持视觉的 OpenAI 模型，例如 `gpt-4o-mini`。
-
-常见配置路径：
-
-- ZCode：`~/.zcode/v2/config.json`
-- Claude Desktop：`~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ### 3. 验证
 
@@ -94,32 +85,17 @@ LLM（无视觉）──MCP/stdio──► clipboard-vision-mcp ──OpenAI-com
 | --- | --- | --- |
 | `OPENAI_API_KEY` | 必填 | OpenAI-compatible API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | 视觉模型名 |
-| `OPENAI_BASE_URL` | OpenAI 默认地址 | OpenAI-compatible 网关地址；使用 OpenAI 官方时可不填 |
+| `OPENAI_BASE_URL` | OpenAI 默认地址 | OpenAI-compatible 网关地址 |
 | `OPENAI_TIMEOUT_MS` | `60000` | 请求超时时间（毫秒） |
 | `LOCAL_FILE_INPUT_ENABLED` | `true` | 设为 `false` 可禁用本地文件路径输入 |
 | `LOCAL_FILE_ALLOWED_ROOTS` | 空 | 路径 allowlist，逗号分隔，例如 `/tmp,~/Pictures`；空表示允许所有路径 |
 
-Provider 示例：
+Provider 配置示例：
 
 ```bash
-# Qwen / DashScope
-OPENAI_API_KEY=...
-OPENAI_MODEL=qwen-vl-plus
-OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-
-# Gemini OpenAI-compatible endpoint
-OPENAI_API_KEY=...
-OPENAI_MODEL=gemini-2.5-flash
-OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-
-# LiteLLM 或自托管 OpenAI-compatible 网关
 OPENAI_API_KEY=...
 OPENAI_MODEL=your-vision-model
-OPENAI_BASE_URL=http://localhost:4000/v1
-
-# OpenAI 官方接口
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
 ```
 
 本地文件、data URL、原始 base64 和剪贴板输入必须是 PNG、JPEG、GIF、WebP 或 BMP 格式，单张不超过 20 MiB。HTTP/HTTPS URL 会作为 URL 直接传给 OpenAI-compatible API。
