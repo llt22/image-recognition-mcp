@@ -1,50 +1,37 @@
 # clipboard-vision-mcp
 
+[![npm](https://img.shields.io/npm/v/clipboard-vision-mcp?color=cb3837&label=npm)](https://www.npmjs.com/package/clipboard-vision-mcp)
 [![LINUX DO](https://img.shields.io/badge/LINUX--DO-Community-blue?style=flat)](https://linux.do/)
 
 [中文](README.md) | [English](README.en.md)
 
-A clipboard-first [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to understand clipboard screenshots. It proxies the image to a configured OpenAI-compatible vision model and returns text descriptions or answers to image questions.
+A clipboard-first [MCP](https://modelcontextprotocol.io) server that gives vision-less LLMs the ability to understand screenshots and images. It can read the system clipboard, local image files, HTTP(S) image URLs, data URLs, or base64 images, then return text descriptions or answers to image questions through an OpenAI-compatible vision model.
 
 ```text
 LLM (no vision) ──MCP/stdio──► clipboard-vision-mcp ──OpenAI-compatible API──► vision model ──► text result
 ```
 
-## Quick start
+## Usage
 
-### 1. Prepare the runtime
+### 1. Prepare Dependencies
 
-You'll need **Node.js ≥ 20** and an **OpenAI-compatible API key** with access to a vision model (set it in the MCP Host config below). The `OPENAI_*` variable names follow the OpenAI-compatible API convention; they do not mean you must use OpenAI's official endpoint.
+You need:
 
-The simplest setup is to run the package from your MCP Host with `npx -y clipboard-vision-mcp`; no global install is required. If you prefer a local command, install it globally:
+- Node.js 20 or newer
+- An OpenAI-compatible API key with access to a vision model
+- A clipboard image reader:
+  - macOS: `brew install pngpaste`
+  - Windows: PowerShell is built in
+  - Linux Wayland: `wl-paste` from `wl-clipboard`
+  - Linux X11: `xclip`
 
-```bash
-npm install -g clipboard-vision-mcp
-```
+You do not need to install the package globally. The recommended setup is to run it from your MCP Host with `npx -y clipboard-vision-mcp`.
 
-For source-based development:
+Package page: [clipboard-vision-mcp on npm](https://www.npmjs.com/package/clipboard-vision-mcp)
 
-```bash
-git clone <this-repo> image-recognition-mcp
-cd image-recognition-mcp
-npm install
-npm run build
-```
+### 2. Configure Your MCP Host
 
-### 2. Clipboard prerequisites
-
-Your system needs a tool to read clipboard images:
-
-- **macOS**: [pngpaste](https://github.com/jcsalterego/pngpaste) (`brew install pngpaste`)
-- **Windows**: PowerShell (built in, no extra install)
-- **Linux Wayland**: `wl-paste` from `wl-clipboard`
-- **Linux X11**: `xclip`
-
-### 3. Configure your MCP Host
-
-Add the following to the `mcpServers` section of your MCP Host config (ZCode, Claude Desktop, etc.).
-
-This example uses Qwen / DashScope. For Gemini, LiteLLM, one-api, New API, or another OpenAI-compatible gateway, replace `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`.
+Add this to the `mcpServers` section of your MCP Host config (ZCode, Claude Desktop, etc.):
 
 ```jsonc
 {
@@ -62,53 +49,60 @@ This example uses Qwen / DashScope. For Gemini, LiteLLM, one-api, New API, or an
 }
 ```
 
-If you use OpenAI's official endpoint, remove `OPENAI_BASE_URL` and set `OPENAI_MODEL` to a vision-capable OpenAI model, such as `gpt-4o-mini`.
+This example uses Qwen / DashScope. If you use OpenAI's official endpoint, remove `OPENAI_BASE_URL` and set `OPENAI_MODEL` to a vision-capable OpenAI model, such as `gpt-4o-mini`.
 
-File paths: ZCode config at `~/.zcode/v2/config.json`, Claude Desktop at `~/Library/Application Support/Claude/claude_desktop_config.json`.
+Common config paths:
 
-If running from a local clone, use `"command": "node"` and point `args` to the absolute path of `dist/index.js`.
+- ZCode: `~/.zcode/v2/config.json`
+- Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-### 4. Verify
+### 3. Verify
 
 Copy a screenshot to your clipboard and ask your AI assistant:
 
-> Analyze the screenshot in my clipboard — what text is shown?
+> Analyze the screenshot in my clipboard. What text is shown?
 
 If your MCP Host loaded the server correctly, the assistant should call `recognize_image`, which reads the clipboard by default, and return the captured content.
 
-## Features
+## Tool
 
-- One general-purpose tool, `recognize_image`, supporting clipboard, local files, URLs, data URLs, and base64
-- Custom prompts for specific questions, such as describing the image, extracting text, or asking about screenshot details
-- Four input sources: clipboard (default), local file path, HTTP(S) URL, base64 / data URL
-- Configurable OpenAI-compatible provider, model (`gpt-4o-mini` by default), detail level, max tokens, and timeout
-- Validates local, base64, and clipboard images before sending upstream
-- Optional local file input toggle and path allowlist for tighter deployments
-- stdio transport — works with any MCP-compatible host
+### `recognize_image`
+
+One general-purpose image recognition tool. It reads the clipboard by default, or accepts a local path, HTTP(S) URL, data URL, base64 image, or `"clipboard"` through the `image` parameter.
+
+| Parameter | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `image` | string | no | `"clipboard"` | Path / URL / data URL / base64 / `"clipboard"` |
+| `prompt` | string | no | `Describe this image in detail, including any visible text.` | Question or instruction about the image |
+| `detail` | `"auto"` \| `"low"` \| `"high"` | no | `auto` | Vision detail level; `low` is faster and cheaper |
+| `maxTokens` | integer | no | `1024` | Max tokens for the response |
+
+Example requests:
+
+- Describe this screenshot
+- Extract the text from this image
+- What error message is shown in this UI screenshot?
+- What does this chart show?
+
+Returns `{ content: [{ type: "text", text: "..." }] }`, or `isError: true` with an error message on failure.
 
 ## Configuration
 
-Besides setting environment variables in the MCP Host's `env` block, you can also use a project-root `.env` file:
-
-```bash
-cp .env.example .env
-```
-
-The server loads `.env` on startup while keeping any env vars already provided by the MCP host.
+Besides setting environment variables in the MCP Host's `env` block, you can also use a project-root `.env` file. Environment variables passed by the MCP Host take precedence.
 
 | Env var | Default | Description |
 | --- | --- | --- |
 | `OPENAI_API_KEY` | — (required) | OpenAI-compatible API key |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Vision model |
 | `OPENAI_BASE_URL` | OpenAI default | OpenAI-compatible gateway URL; omit it for OpenAI's official endpoint |
-| `OPENAI_TIMEOUT_MS` | `60000` | Request timeout (milliseconds) |
+| `OPENAI_TIMEOUT_MS` | `60000` | Request timeout in milliseconds |
 | `LOCAL_FILE_INPUT_ENABLED` | `true` | Set to `false` to disable local file path input |
 | `LOCAL_FILE_ALLOWED_ROOTS` | — | Comma-separated allowlist, e.g. `/tmp,~/Pictures`; empty allows all |
 
 Provider examples:
 
 ```bash
-# Qwen / DashScope OpenAI-compatible endpoint
+# Qwen / DashScope
 OPENAI_API_KEY=...
 OPENAI_MODEL=qwen-vl-plus
 OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
@@ -128,32 +122,32 @@ OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o-mini
 ```
 
-## Tool reference
-
-### `recognize_image`
-
-| Parameter | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `image` | string | no | `"clipboard"` | Path / URL / data URL / base64 / `"clipboard"` |
-| `prompt` | string | no | `Describe this image in detail, including any visible text.` | Question or instruction about the image |
-| `detail` | `"auto"` \| `"low"` \| `"high"` | no | `auto` | Vision detail level; `low` is faster and cheaper |
-| `maxTokens` | integer | no | `1024` | Max tokens for the response |
-
-Returns `{ content: [{ type: "text", text: "..." }] }`, or `isError: true` with an error message on failure.
-
 Local files, data URLs, raw base64, and clipboard inputs must be PNG, JPEG, GIF, WebP, or BMP images up to 20 MiB. HTTP/HTTPS URLs are passed directly to the OpenAI-compatible API.
 
-## Run locally
+## Development
+
+Run from source:
 
 ```bash
-npm run dev      # tsx, no build step
+git clone <this-repo> image-recognition-mcp
+cd image-recognition-mcp
+npm install
+npm run build
+```
+
+Local development:
+
+```bash
+npm run dev
 # or
 npm run build && npm start
 ```
 
-The server speaks MCP over stdio — it reads JSON-RPC frames from stdin and writes responses to stdout.
+If running a local clone as an MCP server, use `"command": "node"` and point `args` to the absolute path of `dist/index.js`.
 
-## Project structure
+The server speaks MCP over stdio: it reads JSON-RPC frames from stdin and writes responses to stdout.
+
+## Project Structure
 
 ```text
 clipboard-vision-mcp/
@@ -162,7 +156,7 @@ clipboard-vision-mcp/
 ├── .env.example
 └── src/
     ├── index.ts              # MCP server entry, registers tools, stdio transport
-    ├── config.ts             # Loads + validates env config
+    ├── config.ts             # Loads and validates env config
     ├── tools/
     │   └── recognize.ts      # Vision tool definitions and handlers
     ├── providers/
@@ -171,7 +165,7 @@ clipboard-vision-mcp/
         ├── index.ts          # resolveImage() dispatcher
         ├── types.ts
         ├── image.ts          # Image MIME, size, magic-byte validation
-        ├── file.ts           # Local path → base64
+        ├── file.ts           # Local path to base64
         ├── url.ts            # HTTP(S) URL passthrough
         ├── base64.ts         # base64 / data URL
         └── clipboard.ts      # Clipboard capture for macOS / Windows / Linux
