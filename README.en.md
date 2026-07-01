@@ -4,7 +4,7 @@
 
 [中文](README.md) | [English](README.en.md)
 
-A clipboard-first [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to understand clipboard screenshots. It proxies the image to a configured OpenAI-compatible vision model and returns text descriptions, OCR results, or analysis.
+A clipboard-first [MCP](https://modelcontextprotocol.io) server that gives **vision-less LLMs** the ability to understand clipboard screenshots. It proxies the image to a configured OpenAI-compatible vision model and returns text descriptions or answers to image questions.
 
 ```text
 LLM (no vision) ──MCP/stdio──► clipboard-vision-mcp ──OpenAI-compatible API──► vision model ──► text result
@@ -74,15 +74,12 @@ Copy a screenshot to your clipboard and ask your AI assistant:
 
 > Analyze the screenshot in my clipboard — what text is shown?
 
-If your MCP Host loaded the server correctly, the assistant should call `analyze_clipboard_image` or `recognize_image` and return the captured content.
+If your MCP Host loaded the server correctly, the assistant should call `recognize_image`, which reads the clipboard by default, and return the captured content.
 
 ## Features
 
-- Four dedicated tools for different scenarios:
-  - `analyze_clipboard_image` — general screenshot/image analysis
-  - `extract_clipboard_text` — OCR-focused text extraction, preserves line breaks and code formatting
-  - `diagnose_clipboard_error` — analyze error screenshots, stack traces, terminal output, or UI failures
-  - `recognize_image` — flexible tool supporting clipboard, local files, URLs, data URLs, and base64
+- One general-purpose tool, `recognize_image`, supporting clipboard, local files, URLs, data URLs, and base64
+- Custom prompts for specific questions, such as describing the image, extracting text, or asking about screenshot details
 - Four input sources: clipboard (default), local file path, HTTP(S) URL, base64 / data URL
 - Configurable OpenAI-compatible provider, model (`gpt-4o-mini` by default), detail level, max tokens, and timeout
 - Validates local, base64, and clipboard images before sending upstream
@@ -133,42 +130,12 @@ OPENAI_MODEL=gpt-4o-mini
 
 ## Tool reference
 
-### `analyze_clipboard_image`
-
-| Parameter | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `prompt` | string | no | `Describe this image in detail, including any visible text (OCR).` | Question or instruction about the image |
-| `detail` | `"auto"` \| `"low"` \| `"high"` | no | `auto` | Vision detail level; `low` is faster and cheaper |
-| `maxTokens` | integer | no | `1024` | Max tokens for the response |
-
-Reads the current clipboard image.
-
-### `extract_clipboard_text`
-
-| Parameter | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `prompt` | string | no | `Extract all visible text from this image. Preserve line breaks and code formatting when possible.` | Question or instruction about the image |
-| `detail` | `"auto"` \| `"low"` \| `"high"` | no | `auto` | Vision detail level; `low` is faster and cheaper |
-| `maxTokens` | integer | no | `1024` | Max tokens for the response |
-
-Reads the current clipboard image with a default prompt optimized for OCR.
-
-### `diagnose_clipboard_error`
-
-| Parameter | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `prompt` | string | no | `Analyze this screenshot for error messages, stack traces, terminal output, or UI failure states. Explain the likely cause and actionable next steps.` | Question or instruction about the image |
-| `detail` | `"auto"` \| `"low"` \| `"high"` | no | `auto` | Vision detail level; `low` is faster and cheaper |
-| `maxTokens` | integer | no | `1024` | Max tokens for the response |
-
-Reads the current clipboard image with a default prompt optimized for debugging.
-
 ### `recognize_image`
 
 | Parameter | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
 | `image` | string | no | `"clipboard"` | Path / URL / data URL / base64 / `"clipboard"` |
-| `prompt` | string | no | `Describe this image in detail, including any visible text (OCR).` | Question or instruction about the image |
+| `prompt` | string | no | `Describe this image in detail, including any visible text.` | Question or instruction about the image |
 | `detail` | `"auto"` \| `"low"` \| `"high"` | no | `auto` | Vision detail level; `low` is faster and cheaper |
 | `maxTokens` | integer | no | `1024` | Max tokens for the response |
 
